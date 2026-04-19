@@ -1,3 +1,4 @@
+'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 const gradientStyle = {
@@ -110,7 +111,7 @@ export default function Home() {
 	const answer = useCallback(
 		(selected: string) => {
 			if (locked) return
-			
+
 			if (intervalRef.current) clearInterval(intervalRef.current)
 			if (timeoutRef.current) clearTimeout(timeoutRef.current)
 
