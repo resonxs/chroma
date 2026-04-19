@@ -1,5 +1,3 @@
-'use client'
-
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 const gradientStyle = {
@@ -21,6 +19,7 @@ export default function Home() {
 	const [difficulty, setDifficulty] = useState<'easy' | 'hard'>('easy')
 	const [correctAnim, setCorrectAnim] = useState(false)
 	const [wrongAnim, setWrongAnim] = useState(false)
+	const [locked, setLocked] = useState(false)
 	const intervalRef = useRef<NodeJS.Timeout | null>(null)
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -84,6 +83,7 @@ export default function Home() {
 		setShowTarget(true)
 		setTimer(350)
 		setMsg('Запомни цвет')
+		setLocked(false)
 
 		let ms = 3500
 		if (intervalRef.current) clearInterval(intervalRef.current)
@@ -103,32 +103,42 @@ export default function Home() {
 	const start = useCallback(() => {
 		setScore(0)
 		setScreen('game')
+		setLocked(false)
 		newRound()
 	}, [newRound])
 
 	const answer = useCallback(
 		(selected: string) => {
+			if (locked) return
+			
 			if (intervalRef.current) clearInterval(intervalRef.current)
 			if (timeoutRef.current) clearTimeout(timeoutRef.current)
+
+			setLocked(true)
 
 			if (selected === target) {
 				setScore(prev => prev + 1)
 				setMsg('Верно!')
 				setCorrectAnim(true)
-				timeoutRef.current = setTimeout(() => newRound(), 800)
+				timeoutRef.current = setTimeout(() => {
+					newRound()
+				}, 800)
 			} else {
 				setMsg('Неверно')
 				setWrongAnim(true)
-				timeoutRef.current = setTimeout(() => setScreen('end'), 1000)
+				timeoutRef.current = setTimeout(() => {
+					setScreen('end')
+				}, 1000)
 			}
 		},
-		[target, newRound]
+		[target, newRound, locked]
 	)
 
 	const reset = useCallback(() => {
 		setScreen('start')
 		setOptions([])
 		setShowTarget(true)
+		setLocked(false)
 		if (intervalRef.current) clearInterval(intervalRef.current)
 		if (timeoutRef.current) clearTimeout(timeoutRef.current)
 	}, [])
